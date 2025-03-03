@@ -11,3 +11,22 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0; /* Светлый фон, чтобы силуэт был виден */
+  overflow: hidden; /* Убираем скроллы */
+}
+
+img {
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+}
+
