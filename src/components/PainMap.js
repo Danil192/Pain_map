@@ -33,18 +33,31 @@ const PainMap = () => {
           <BodySvg />
         </g>
 
+        {/* Стили для эффектов */}
+        <defs>
+          <filter id="blurEffect" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="10" />
+          </filter>
+        </defs>
+
         {/* ГОЛОВА */}
         <rect
           x="470"
           y="50"
           width="160"
           height="160"
-          fill={highlight === "Голова" ? "orange" : "transparent"}
-          opacity="0.4"
+          rx="50"
+          ry="50"
+          fill="orange"
+          opacity={highlight === "Голова" ? 0.4 : 0}
+          filter="url(#blurEffect)"
+          style={{
+            transition: "opacity 0.3s ease-in-out",
+            cursor: "pointer",
+          }}
           onMouseEnter={() => setHighlight("Голова")}
           onMouseLeave={() => setHighlight(null)}
           onClick={() => zoomTo(2.5, 0, 400, "Голова")}
-          style={{ cursor: "pointer" }}
         />
 
         {/* ТУЛОВИЩЕ */}
@@ -53,12 +66,18 @@ const PainMap = () => {
           y="300"
           width="300"
           height="600"
-          fill={highlight === "Туловище" ? "orange" : "transparent"}
-          opacity="0.4"
+          rx="100"
+          ry="100"
+          fill="orange"
+          opacity={highlight === "Туловище" ? 0.4 : 0}
+          filter="url(#blurEffect)"
+          style={{
+            transition: "opacity 0.3s ease-in-out",
+            cursor: "pointer",
+          }}
           onMouseEnter={() => setHighlight("Туловище")}
           onMouseLeave={() => setHighlight(null)}
           onClick={() => zoomTo(2, 0, 100, "Туловище")}
-          style={{ cursor: "pointer" }}
         />
 
         {/* НОГИ */}
@@ -67,12 +86,18 @@ const PainMap = () => {
           y="1100"
           width="400"
           height="800"
-          fill={highlight === "Ноги" ? "orange" : "transparent"}
-          opacity="0.4"
+          rx="80"
+          ry="80"
+          fill="orange"
+          opacity={highlight === "Ноги" ? 0.4 : 0}
+          filter="url(#blurEffect)"
+          style={{
+            transition: "opacity 0.3s ease-in-out",
+            cursor: "pointer",
+          }}
           onMouseEnter={() => setHighlight("Ноги")}
           onMouseLeave={() => setHighlight(null)}
           onClick={() => zoomTo(2, 0, -200, "Ноги")}
-          style={{ cursor: "pointer" }}
         />
       </svg>
     </div>
