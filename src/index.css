@@ -20,8 +20,8 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f0f0f0; /* Светлый фон, чтобы силуэт был виден */
-  overflow: hidden; /* Убираем скроллы */
+  background-color: #f0f0f0; 
+  /* overflow: hidden; /* убираем скроллы */
 }
 
 img {
