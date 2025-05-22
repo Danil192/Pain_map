@@ -1,20 +1,18 @@
-import React, { useState } from "react";
-import RegisterModal from "./components/RegisterModal";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import PainMap from "./components/PainMap";
+import PainRecordsPage from "./components/PainHistoryModal";
+import "bootstrap/dist/css/bootstrap.min.css";
+import 'bootstrap/dist/js/bootstrap.bundle.min';
+
 
 const App = () => {
-  const [showRegister, setShowRegister] = useState(false);
-
   return (
-    <div className="App">
-      <button
-        onClick={() => setShowRegister(true)}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Регистрация
-      </button>
-
-      {showRegister && <RegisterModal onClose={() => setShowRegister(false)} />}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<PainMap />} />
+      </Routes>
+    </Router>
   );
 };
 

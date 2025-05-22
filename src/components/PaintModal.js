@@ -3,8 +3,8 @@ import { sendPainData } from "../api";
 
 const PainModal = ({ point, onClose }) => {
   const [intensity, setIntensity] = useState("");
-  const [character, setCharacter] = useState("Острая");
-  const [timeOfDay, setTimeOfDay] = useState("Утро");
+  const [character, setCharacter] = useState("Острая"); // пока заглушка (ID = 1)
+  const [timeOfDay, setTimeOfDay] = useState("Утро");    // пока заглушка (ID = 1)
   const [triggers, setTriggers] = useState({
     position: false,
     breath: false,
@@ -19,29 +19,53 @@ const PainModal = ({ point, onClose }) => {
     }));
   };
 
-  const handleSave = async () => {
-    const data = {
-      localization: point.name,
-      intensity: parseInt(intensity),
-      character,
-      timeOfDay,
-      triggers: {
-        position: triggers.position,
-        breath: triggers.breath,
-        physical: triggers.physical,
-        stress: triggers.stress,
-      },
-    };
-  
-    try {
-      const result = await sendPainData(data);
-      alert("Боль успешно отправлена!");
-    } catch (error) {
-      alert("Ошибка при отправке.");
-    }
-  
-    onClose();
+  const painTypeToId = {
+    "Острая": 1,
+    "Тупая": 2,
+    "Пульсирующая": 3,
+    "Жгучая": 4,
+    "Ноющая": 5,
+    "Колючая": 6,
+    "Стреляющая": 7,
+    "Сжимающая": 8,
+    "Давящая": 9
   };
+
+  const timeOfDayToId = {
+    "Утро": 1,
+    "День": 2,
+    "Вечер": 3,
+    "Ночь": 4,
+    "Всегда": 5
+  };
+
+const handleSave = async () => {
+  const data = {
+    user_id: 1,
+    pain_point_id: point.id ?? 1,
+    pain_intensity_id: Math.min(Math.max(parseInt(intensity), 1), 10),
+    pain_type_id: painTypeToId[character] ?? 1,
+    time_of_day_id: timeOfDayToId[timeOfDay] ?? 5,
+    body_position_id: triggers.position ? 1 : 2,
+    breathing_relation_id: triggers.breath ? 1 : 2,
+    physical_activity_relation_id: triggers.physical ? 1 : 2,
+    stress_relation_id: triggers.stress ? 1 : 2,
+    record_date: new Date().toISOString(),
+  };
+
+  console.log("Отправка данных:", data);
+
+  try {
+    await sendPainData(data);
+    alert("Боль успешно отправлена!");
+  } catch (err) {
+    console.error("Ошибка при отправке:", err);
+    alert("Ошибка при отправке");
+  }
+
+  onClose();
+};
+
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-xl border border-gray-300 w-[500px]">
@@ -104,47 +128,46 @@ const PainModal = ({ point, onClose }) => {
       </div>
 
       <div className="mb-4">
-  <label className="font-semibold block">Связь с:</label>
-  <div className="mt-2">
-  <label style={{ display: "block", marginBottom: "8px" }}>
-    <input
-      type="checkbox"
-      className="mr-2"
-      checked={triggers.position}
-      onChange={() => handleCheckboxChange("position")}
-    />
-    Изменением положения
-  </label>
-  <label style={{ display: "block", marginBottom: "8px" }}>
-    <input
-      type="checkbox"
-      className="mr-2"
-      checked={triggers.breath}
-      onChange={() => handleCheckboxChange("breath")}
-    />
-    Вдохом / выдохом
-  </label>
-  <label style={{ display: "block", marginBottom: "8px" }}>
-    <input
-      type="checkbox"
-      className="mr-2"
-      checked={triggers.physical}
-      onChange={() => handleCheckboxChange("physical")}
-    />
-    Физической нагрузкой
-  </label>
-  <label style={{ display: "block", marginBottom: "8px" }}>
-    <input
-      type="checkbox"
-      className="mr-2"
-      checked={triggers.stress}
-      onChange={() => handleCheckboxChange("stress")}
-    />
-    Стрессом
-  </label>
-</div>
-</div>
-
+        <label className="font-semibold block">Связь с:</label>
+        <div className="mt-2 space-y-2">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={triggers.position}
+              onChange={() => handleCheckboxChange("position")}
+            />
+            Изменением положения
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={triggers.breath}
+              onChange={() => handleCheckboxChange("breath")}
+            />
+            Вдохом / выдохом
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={triggers.physical}
+              onChange={() => handleCheckboxChange("physical")}
+            />
+            Физической нагрузкой
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={triggers.stress}
+              onChange={() => handleCheckboxChange("stress")}
+            />
+            Стрессом
+          </label>
+        </div>
+      </div>
 
       <div className="flex justify-between mt-6">
         <button
