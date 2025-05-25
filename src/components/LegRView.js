@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { ReactComponent as LegSvg } from "../assets/svg/Leg_R.svg";
 import painPointsData from "../data/painPointsData.json";
-import PainModal from "./PaintModal";
+import PainModal from "./PainModal";
 import legImage from "../assets/svg/LegR.png";
-
 
 const legPoints = painPointsData["Нога_Правая"] || {};
 
-const LegRView = ({ onBack }) => {
+const LegRView = () => {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -18,14 +17,6 @@ const LegRView = ({ onBack }) => {
 
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-white relative overflow-hidden">
-      {/* Кнопка Назад */}
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 bg-black text-white px-4 py-2 rounded text-xl z-50"
-      >
-        ← Назад
-      </button>
-
       {/* Контейнер */}
       <div
         className="relative"
@@ -62,7 +53,7 @@ const LegRView = ({ onBack }) => {
               backgroundColor: "red",
               borderRadius: "50%",
               transform: "translate(-50%, -50%)",
-              zIndex: 30, 
+              zIndex: 30,
               cursor: "pointer",
             }}
           />

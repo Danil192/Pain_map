@@ -7,9 +7,13 @@ import LegRView from "./LegRView";
 import LegLView from "./LegLView";
 import { getUserPainRecords } from "../api";
 import PainHistoryModal from "./PainHistoryModal";
-
+import PainModal from "./PainModal";
 import Navbar from "./ui/Navbar";
 import Button from "./ui/Button";
+import RegisterModal from "./RegisterModal";
+import LoginModal from "./LoginModal";
+import UserPage from "./UserPage";
+
 
 const PainMap = () => {
   const [highlight, setHighlight] = useState(null);
@@ -18,6 +22,13 @@ const PainMap = () => {
   const [painTypesMap, setPainTypesMap] = useState({});
   const [painRecords, setPainRecords] = useState([]);
   const [showRecords, setShowRecords] = useState(false);
+
+  const [loggedInUser, setLoggedInUser] = useState(null);
+
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const [showPainModal, setShowPainModal] = useState(false);
 
   const handleClick = (part) => {
     setFadeOut(true);
@@ -71,12 +82,45 @@ const PainMap = () => {
 
   return (
     <div className="container-fluid p-0">
-    <Navbar
-      onShowHistory={async () => {
-        await loadPainRecords();      
-        setShowRecords(true);        
+      <Navbar
+      onGoHome={() => {
+        setShowPainModal(false);
+        setShowRecords(false);
+        setActivePart(null); // сброс деталей
       }}
+      onShowHistory={async () => {
+        await loadPainRecords();
+        setShowRecords(true);
+      }}
+      onRegister={() => {
+        setShowRegisterModal(true);
+        setShowLoginModal(false);
+      }}
+      onLogin={() => {
+        setShowLoginModal(true);
+        setShowRegisterModal(false);
+      }}
+      onLogout={() => setLoggedInUser(null)}  // кнопка "Выйти"
+      user={loggedInUser}                     // имя пользователя
     />
+
+      {showLoginModal && (
+        <LoginModal
+          onClose={() => setShowLoginModal(false)}
+          onLoginSuccess={(userData) => {
+            setLoggedInUser(userData);
+            setShowLoginModal(false);
+          }}
+        />
+      )}
+
+      {showRegisterModal && (
+        <RegisterModal onClose={() => setShowRegisterModal(false)} />
+      )}
+
+      {showLoginModal && (
+        <LoginModal onClose={() => setShowLoginModal(false)} />
+      )} 
 
       {showRecords && (
       <PainHistoryModal
@@ -86,13 +130,21 @@ const PainMap = () => {
       )}
 
       <div className="d-flex justify-content-center align-items-center vh-100">
+
+                    {showPainModal && (
+              <PainModal
+                onClose={() => setShowPainModal(false)}
+                // ...передай всё нужное внутрь
+              />
+            )}
+
         {activePart === "Рука_Правая" ? (
           <HandRView onBack={handleBack} />
         ) : activePart === "Рука_Левая" ? (
           <HandLView onBack={handleBack} />
         ) : (
           <svg
-            viewBox="0 0 1300 2000"
+            viewBox="0 -65 1300 2000"
             preserveAspectRatio="xMidYMid meet"
             style={{ height: "100vh", width: "auto", display: "block" }}
           >

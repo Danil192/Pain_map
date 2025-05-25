@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { ReactComponent as HandSvg } from "../assets/svg/hand_L.svg"; // левая рука
 import painPointsData from "../data/painPointsData.json";
-import PainModal from "./PaintModal";
+import PainModal from "./PainModal";
 
 const handPoints = painPointsData["Рука_Левая"]; // ключ для левой руки
 
-const HandLView = ({ onBack }) => {
+const HandLView = () => {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -16,14 +16,6 @@ const HandLView = ({ onBack }) => {
 
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-white relative overflow-hidden">
-      {/* Кнопка Назад */}
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 bg-black text-white px-4 py-2 rounded text-xl z-50"
-      >
-        ← Назад
-      </button>
-
       {/* Контейнер SVG + точки */}
       <div
         className="relative"
@@ -74,23 +66,8 @@ const HandLView = ({ onBack }) => {
       </div>
 
       {/* Модалка */}
-      {showModal && selectedPoint && (
-        <div
-          style={{
-            position: "fixed",
-            top: "20%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 9999,
-            backgroundColor: "white",
-            padding: "20px",
-            border: "2px solid black",
-            borderRadius: "12px",
-            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
-          }}
-        >
-          <PainModal point={selectedPoint} onClose={() => setShowModal(false)} />
-        </div>
+  {showModal && selectedPoint && (
+        <PainModal point={selectedPoint} onClose={() => setShowModal(false)} />
       )}
     </div>
   );

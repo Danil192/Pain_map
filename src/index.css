@@ -30,3 +30,35 @@ img {
   object-fit: contain;
 }
 
+
+
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1050;
+}
+
+.modal-backdrop-custom.show {
+  opacity: 1;
+}
+
+.modal-wrapper {
+  background-color: white;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 20px;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.modal-wrapper.show {
+  transform: scale(1);
+}

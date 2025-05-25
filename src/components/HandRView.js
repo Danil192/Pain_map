@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { ReactComponent as HandSvg } from "../assets/svg/hand_R.svg";
 import painPointsData from "../data/painPointsData.json";
-import PainModal from "./PaintModal";
+import PainModal from "./PainModal";
 
 const handPoints = painPointsData["Рука_Правая"];
 
-const HandRView = ({ onBack }) => {
+const HandRView = () => {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -16,21 +16,13 @@ const HandRView = ({ onBack }) => {
 
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-white relative overflow-hidden">
-      {/* Кнопка Назад */}
-      <button
-        onClick={onBack}
-        className="absolute top-6 left-6 bg-black text-white px-4 py-2 rounded text-xl z-50"
-      >
-        ← Назад
-      </button>
-
       {/* Контейнер SVG + точки */}
       <div
         className="relative"
         style={{
           width: "700px",
-          height: "700px", // достаточно места по высоте
-          transform: "translate(-20px, -30px)", // сдвиг
+          height: "700px",
+          transform: "translate(-20px, -30px)",
         }}
       >
         <div
@@ -44,8 +36,8 @@ const HandRView = ({ onBack }) => {
           <HandSvg
             className="absolute top-0 left-0 w-full h-full pointer-events-none"
             style={{
-              transform: "scale(0.57)", // уменьшает размер SVG
-              transformOrigin: "top left", // чтобы масштаб шел от верхнего левого угла
+              transform: "scale(0.57)",
+              transformOrigin: "top left",
               zIndex: 10,
             }}
           />
@@ -75,22 +67,7 @@ const HandRView = ({ onBack }) => {
 
       {/* Модалка */}
       {showModal && selectedPoint && (
-        <div
-          style={{
-            position: "fixed",
-            top: "20%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 9999,
-            backgroundColor: "white",
-            padding: "20px",
-            border: "2px solid black",
-            borderRadius: "12px",
-            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
-          }}
-        >
-          <PainModal point={selectedPoint} onClose={() => setShowModal(false)} />
-        </div>
+        <PainModal point={selectedPoint} onClose={() => setShowModal(false)} />
       )}
     </div>
   );
