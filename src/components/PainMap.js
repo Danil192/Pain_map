@@ -12,7 +12,7 @@ import Navbar from "./ui/Navbar";
 import Button from "./ui/Button";
 import RegisterModal from "./RegisterModal";
 import LoginModal from "./LoginModal";
-import UserPage from "./UserPage";
+import UserProfile from "./UserProfile";
 
 
 const PainMap = () => {
@@ -22,12 +22,11 @@ const PainMap = () => {
   const [painTypesMap, setPainTypesMap] = useState({});
   const [painRecords, setPainRecords] = useState([]);
   const [showRecords, setShowRecords] = useState(false);
-
+  const [user, setUser] = useState(null);
   const [loggedInUser, setLoggedInUser] = useState(null);
-
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-
+  const [showProfile, setShowProfile] = useState(false);
   const [showPainModal, setShowPainModal] = useState(false);
 
   const handleClick = (part) => {
@@ -100,27 +99,29 @@ const PainMap = () => {
         setShowLoginModal(true);
         setShowRegisterModal(false);
       }}
-      onLogout={() => setLoggedInUser(null)}  // кнопка "Выйти"
-      user={loggedInUser}                     // имя пользователя
+      onLogout={() => {
+          setUser(null);
+          setShowProfile(false);
+        }}
+      user={user}                     // имя пользователя
+
     />
 
-      {showLoginModal && (
-        <LoginModal
-          onClose={() => setShowLoginModal(false)}
-          onLoginSuccess={(userData) => {
-            setLoggedInUser(userData);
-            setShowLoginModal(false);
-          }}
-        />
-      )}
+    {showProfile && user && <UserProfile user={user} painRecords={painRecords} />}  
+
+    {showLoginModal && (
+      <LoginModal
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={(userData) => {
+          setUser(userData);         
+          setShowLoginModal(false);
+        }}
+      />
+    )}
 
       {showRegisterModal && (
         <RegisterModal onClose={() => setShowRegisterModal(false)} />
       )}
-
-      {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} />
-      )} 
 
       {showRecords && (
       <PainHistoryModal

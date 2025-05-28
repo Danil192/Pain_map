@@ -2,40 +2,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const PainHistoryModal = ({ records = [], onClose }) => {
-  
   const navigate = useNavigate();
 
- const handleClose = () => {
+  const handleClose = () => {
     if (onClose) {
-      onClose(); 
+      onClose();
     } else {
-      navigate("/"); 
+      navigate("/");
     }
-  };
-
-  const painTypesMap = {
-    1: "Острая", 2: "Тупая", 3: "Пульсирующая", 4: "Жгучая", 5: "Ноющая",
-    6: "Колючая", 7: "Стреляющая", 8: "Сжимающая", 9: "Давящая"
-  };
-
-  const timeOfDayMap = {
-    1: "Утро", 2: "День", 3: "Вечер", 4: "Ночь"
-  };
-
-  const bodyPositionMap = {
-    1: "Связана с положением тела", 2: "Не зависит от положения тела"
-  };
-
-  const breathingMap = {
-    1: "Связана с дыханием", 2: "Не зависит от дыхания"
-  };
-
-  const physicalActivityMap = {
-    1: "Связана с физической активностью", 2: "Не зависит от физической активности"
-  };
-
-  const stressMap = {
-    1: "Связана со стрессом", 2: "Не зависит от стресса"
   };
 
   return (
@@ -67,7 +41,10 @@ const PainHistoryModal = ({ records = [], onClose }) => {
                         aria-expanded="false"
                         aria-controls={`collapse${index}`}
                       >
-                        Боль #{index + 1} — {rec.record_date ? new Date(rec.record_date).toLocaleString() : "Без даты"}
+                        Боль #{index + 1} —{" "}
+                        {rec.record_date
+                          ? new Date(rec.record_date).toLocaleString()
+                          : "Без даты"}
                       </button>
                     </h2>
                     <div
@@ -78,14 +55,14 @@ const PainHistoryModal = ({ records = [], onClose }) => {
                     >
                       <div className="accordion-body">
                         <ul className="list-group list-group-flush">
-                          <li className="list-group-item"><strong>Точка ID:</strong> {rec.pain_point_id ?? "—"}</li>
-                          <li className="list-group-item"><strong>Интенсивность:</strong> {rec.pain_intensity_id ?? "—"}</li>
-                          <li className="list-group-item"><strong>Тип боли:</strong> {painTypesMap[rec.pain_type_id] ?? `Тип #${rec.pain_type_id ?? "?"}`}</li>
-                          <li className="list-group-item"><strong>Время суток:</strong> {timeOfDayMap[rec.time_of_day_id] ?? "—"}</li>
-                          <li className="list-group-item"><strong>Положение тела:</strong> {bodyPositionMap[rec.body_position_relation_id] ?? "—"}</li>
-                          <li className="list-group-item"><strong>Связь с дыханием:</strong> {breathingMap[rec.breathing_relation_id] ?? "—"}</li>
-                          <li className="list-group-item"><strong>Физическая активность:</strong> {physicalActivityMap[rec.physical_activity_relation_id] ?? "—"}</li>
-                          <li className="list-group-item"><strong>Стресс:</strong> {stressMap[rec.stress_relation_id] ?? "—"}</li>
+                          <li className="list-group-item"><strong>Точка:</strong> {rec.pain_point_name || "—"}</li>
+                          <li className="list-group-item"><strong>Интенсивность:</strong> {rec.pain_intensity || "—"}</li>
+                          <li className="list-group-item"><strong>Тип боли:</strong> {rec.pain_type || "—"}</li>
+                          <li className="list-group-item"><strong>Время суток:</strong> {rec.time_of_day || "—"}</li>
+                          <li className="list-group-item"><strong>Положение тела:</strong> {rec.body_position || "—"}</li>
+                          <li className="list-group-item"><strong>Связь с дыханием:</strong> {rec.breathing_relation || "—"}</li>
+                          <li className="list-group-item"><strong>Физическая активность:</strong> {rec.physical_activity_relation || "—"}</li>
+                          <li className="list-group-item"><strong>Стресс:</strong> {rec.stress_relation || "—"}</li>
                         </ul>
                       </div>
                     </div>
@@ -97,8 +74,8 @@ const PainHistoryModal = ({ records = [], onClose }) => {
 
           <div className="modal-footer">
             <button className="btn btn-secondary" onClick={handleClose}>
-            Закрыть
-          </button>
+              Закрыть
+            </button>
           </div>
         </div>
       </div>
