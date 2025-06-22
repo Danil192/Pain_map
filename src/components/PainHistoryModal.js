@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PainHistoryModal = ({ records = [], onClose }) => {
@@ -11,6 +11,44 @@ const PainHistoryModal = ({ records = [], onClose }) => {
       navigate("/");
     }
   };
+
+  const handleSendSingleRecord = async (record, doctorId) => {
+  try {
+    const response = await fetch("http://localhost:3001/send-to-doctor", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        doctor_id: doctorId,
+        pain_history: [record],
+      }),
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      alert("Запись успешно отправлена врачу");
+      setActiveSendIndex(null); 
+    } else {
+      alert("Ошибка при отправке: " + result.message);
+    }
+  } catch (error) {
+    console.error("Ошибка:", error);
+    alert("Произошла ошибка при отправке");
+  }
+};
+
+const [activeSendIndex, setActiveSendIndex] = useState(null);
+const [selectedDoctor, setSelectedDoctor] = useState({});
+const [doctors, setDoctors] = useState([]);
+
+useEffect(() => {
+  // Подгружаем список врачей при монтировании
+  fetch("http://localhost:3001/doctors")
+    .then((res) => res.json())
+    .then((data) => setDoctors(data))
+    .catch((err) => console.error("Ошибка загрузки врачей:", err));
+}, []);
 
   return (
     <div
@@ -55,6 +93,49 @@ const PainHistoryModal = ({ records = [], onClose }) => {
                     >
                       <div className="accordion-body">
                         <ul className="list-group list-group-flush">
+                          <div className="mt-2 text-end">
+                          {activeSendIndex === index ? (
+                            <div>
+                              <select
+                                className="form-select mb-2"
+                                value={selectedDoctor[index] || ""}
+                                onChange={(e) =>
+                                  setSelectedDoctor((prev) => ({
+                                    ...prev,
+                                    [index]: e.target.value,
+                                  }))
+                                }
+                              >
+                                <option value="">Выберите врача</option>
+                                {doctors.map((doc) => (
+                                  <option key={doc.id} value={doc.id}>
+                                    {doc.name}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                className="btn btn-success btn-sm me-2"
+                                disabled={!selectedDoctor[index]}
+                                onClick={() => handleSendSingleRecord(rec, selectedDoctor[index])}
+                              >
+                                Подтвердить отправку
+                              </button>
+                              <button
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() => setActiveSendIndex(null)}
+                              >
+                                Отмена
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => setActiveSendIndex(index)}
+                            >
+                              Отправить врачу
+                            </button>
+                          )}
+                        </div>
                           <li className="list-group-item"><strong>Точка:</strong> {rec.pain_point_name || "—"}</li>
                           <li className="list-group-item"><strong>Интенсивность:</strong> {rec.pain_intensity || "—"}</li>
                           <li className="list-group-item"><strong>Тип боли:</strong> {rec.pain_type || "—"}</li>
