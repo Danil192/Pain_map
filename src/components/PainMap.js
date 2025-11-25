@@ -5,7 +5,6 @@ import HandRView from "./HandRView";
 import HandLView from "./HandLView";
 import LegRView from "./LegRView";
 import LegLView from "./LegLView";
-import { getUserPainRecords } from "../api";
 import PainHistoryModal from "./PainHistoryModal";
 import PainModal from "./PainModal";
 import Navbar from "./ui/Navbar";
@@ -13,17 +12,17 @@ import Button from "./ui/Button";
 import RegisterModal from "./RegisterModal";
 import LoginModal from "./LoginModal";
 import UserProfile from "./UserProfile";
+import { useUser } from "../context/UserContext";
 
 
 const PainMap = () => {
+  const { user, setUser } = useUser();
   const [highlight, setHighlight] = useState(null);
   const [activePart, setActivePart] = useState(null);
   const [fadeOut, setFadeOut] = useState(false);
   const [painTypesMap, setPainTypesMap] = useState({});
   const [painRecords, setPainRecords] = useState([]);
   const [showRecords, setShowRecords] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loggedInUser, setLoggedInUser] = useState(null);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -55,9 +54,19 @@ const PainMap = () => {
     }
   };
 
-  const loadPainRecords = async () => {
+  const loadPainRecords = () => {
+    // Проверка авторизации
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+
     try {
-      const records = await getUserPainRecords(1);
+      // Получаем записи из localStorage
+      const records = JSON.parse(localStorage.getItem('painRecords') || '[]');
+      
+      // Фильтруем записи текущего пользователя
+      const userRecords = records.filter(record => record.user_id === user.id);
 
       const hardcodedPainTypesMap = {
         1: "Острая",
@@ -72,10 +81,12 @@ const PainMap = () => {
       };
 
       setPainTypesMap(hardcodedPainTypesMap);
-      setPainRecords(records);
+      setPainRecords(userRecords);
       setShowRecords(true);
     } catch (err) {
-      alert("Ошибка при получении данных: " + err.message);
+      console.error("Ошибка при получении данных:", err);
+      setPainRecords([]);
+      setShowRecords(true);
     }
   };
 
@@ -87,13 +98,14 @@ const PainMap = () => {
         setShowRecords(false);
         setActivePart(null); // сброс деталей
       }}
-      onShowHistory={async () => {
-        await loadPainRecords();
-        setShowRecords(true);
+      onShowHistory={() => {
+        loadPainRecords();
       }}
       onRegister={() => {
-        setShowRegisterModal(true);
-        setShowLoginModal(false);
+        // Регистрация отключена, показываем сообщение
+        alert("Регистрация временно отключена. Используйте демо-доступ: user@example.com / 12345");
+        setShowLoginModal(true);
+        setShowRegisterModal(false);
       }}
       onLogin={() => {
         setShowLoginModal(true);
@@ -143,6 +155,12 @@ const PainMap = () => {
           <HandRView onBack={handleBack} />
         ) : activePart === "Рука_Левая" ? (
           <HandLView onBack={handleBack} />
+        ) : activePart === "Нога_Правая" ? (
+          <LegRView onBack={handleBack} />
+        ) : activePart === "Нога_Левая" ? (
+          <LegLView onBack={handleBack} />
+        ) : activePart === "Голова" ? (
+          <HeadView onBack={handleBack} />
         ) : (
           <svg
             viewBox="0 -65 1300 2000"
@@ -290,9 +308,6 @@ const PainMap = () => {
               </g>
             )}
 
-            {activePart === "Голова" && <HeadView onBack={handleBack} />}
-            {activePart === "Нога_Правая" && <LegRView onBack={handleBack} />}
-            {activePart === "Нога_Левая" && <LegLView onBack={handleBack} />}
           </svg>
         )}
       </div>

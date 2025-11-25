@@ -57,7 +57,7 @@ app.post("/register", async (req, res) => {
   const { фамилия, имя, отчество, email, пароль } = req.body;
 
   if (!фамилия || !имя || !email || !пароль) {
-    return res.status(400).json({ error: "Заполните все обязательные поля." });
+    return res.status(400).json({ error: "Заполните все обязательные поля (фамилия, имя, email, пароль)." });
   }
 
   try {
@@ -122,6 +122,43 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     console.error("Ошибка при входе:", error);
     res.status(500).json({ error: "Ошибка сервера." });
+  }
+});
+
+// ======================== ОТПРАВКА ДАННЫХ ВРАЧУ ========================
+app.post("/send-to-doctor", async (req, res) => {
+  const { doctor_id, doctor_name, doctor_specialty, pain_history, sent_at } = req.body;
+
+  if (!doctor_id || !pain_history || !Array.isArray(pain_history)) {
+    return res.status(400).json({ error: "Неверный формат данных. Требуются: doctor_id, pain_history (массив)" });
+  }
+
+  try {
+    // Здесь можно сохранить данные в БД или отправить уведомление врачу
+    // Для демо-версии просто логируем и возвращаем успех
+    
+    console.log("=== ОТПРАВКА ДАННЫХ ВРАЧУ ===");
+    console.log("Врач ID:", doctor_id);
+    console.log("Врач:", doctor_name, `(${doctor_specialty})`);
+    console.log("Количество записей:", pain_history.length);
+    console.log("Данные:", JSON.stringify(req.body, null, 2));
+    console.log("Время отправки:", sent_at);
+    console.log("==============================");
+
+    // В реальной системе здесь бы было:
+    // - Сохранение в БД в таблицу "Отправки_врачам"
+    // - Отправка уведомления врачу (email, push, и т.д.)
+    // - Логирование в систему уведомлений
+
+    res.status(200).json({ 
+      message: "Данные успешно отправлены врачу",
+      doctor_id: doctor_id,
+      records_count: pain_history.length,
+      sent_at: sent_at || new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Ошибка при отправке данных врачу:", error);
+    res.status(500).json({ error: "Ошибка сервера при отправке данных" });
   }
 });
 

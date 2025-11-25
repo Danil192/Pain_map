@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { doctors as doctorsList } from "../data/doctors";
 
 const PainHistoryModal = ({ records = [], onClose }) => {
   const navigate = useNavigate();
+  const [activeSendIndex, setActiveSendIndex] = useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState({});
+  const [isSending, setIsSending] = useState(false);
 
   const handleClose = () => {
     if (onClose) {
@@ -12,43 +16,100 @@ const PainHistoryModal = ({ records = [], onClose }) => {
     }
   };
 
+  /**
+   * Отправка данных врачу согласно спецификации
+   * Основной сценарий:
+   * 1. Система объединяет данные боли и ID врача в единый JSON-объект
+   * 2. Система отправляет JSON-структуру на сервер
+   * 3. Система получает ответ об успешной отправке
+   * 4. Отображается уведомление: «Данные успешно отправлены врачу»
+   * 5. Конец
+   */
   const handleSendSingleRecord = async (record, doctorId) => {
-  try {
-    const response = await fetch("http://localhost:3001/send-to-doctor", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        doctor_id: doctorId,
-        pain_history: [record],
-      }),
-    });
-
-    const result = await response.json();
-    if (response.ok) {
-      alert("Запись успешно отправлена врачу");
-      setActiveSendIndex(null); 
-    } else {
-      alert("Ошибка при отправке: " + result.message);
+    // Шаг 1: Объединяем данные боли и ID врача в единый JSON-объект
+    const selectedDoctorData = doctorsList.find(doc => doc.id === parseInt(doctorId));
+    
+    if (!selectedDoctorData) {
+      alert("Ошибка: Врач не найден");
+      return;
     }
-  } catch (error) {
-    console.error("Ошибка:", error);
-    alert("Произошла ошибка при отправке");
-  }
-};
 
-const [activeSendIndex, setActiveSendIndex] = useState(null);
-const [selectedDoctor, setSelectedDoctor] = useState({});
-const [doctors, setDoctors] = useState([]);
+    const requestData = {
+      doctor_id: parseInt(doctorId),
+      doctor_name: selectedDoctorData.name,
+      doctor_specialty: selectedDoctorData.specialty,
+      pain_history: [{
+        id: record.id,
+        pain_point_name: record.pain_point_name,
+        pain_intensity: record.pain_intensity,
+        pain_type: record.pain_type,
+        time_of_day: record.time_of_day,
+        body_position: record.body_position,
+        breathing_relation: record.breathing_relation,
+        physical_activity_relation: record.physical_activity_relation,
+        stress_relation: record.stress_relation,
+        record_date: record.record_date,
+        user_id: record.user_id
+      }],
+      sent_at: new Date().toISOString()
+    };
 
-useEffect(() => {
-  // Подгружаем список врачей при монтировании
-  fetch("http://localhost:3001/doctors")
-    .then((res) => res.json())
-    .then((data) => setDoctors(data))
-    .catch((err) => console.error("Ошибка загрузки врачей:", err));
-}, []);
+    setIsSending(true);
+
+    try {
+      // Шаг 2: Система отправляет JSON-структуру на сервер
+      // ВАЖНО: Замените URL на реальный адрес вашего сервера
+      const response = await fetch("http://localhost:5000/send-to-doctor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      // Шаг 3: Система получает ответ об успешной отправке
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Сохраняем информацию об отправке в localStorage для истории
+        const sentRecords = JSON.parse(localStorage.getItem('sentToDoctors') || '[]');
+        sentRecords.push({
+          ...requestData,
+          sent_successfully: true,
+          sent_at: new Date().toISOString()
+        });
+        localStorage.setItem('sentToDoctors', JSON.stringify(sentRecords));
+
+        // Шаг 4: Отображается уведомление: «Данные успешно отправлены врачу»
+        alert("Данные успешно отправлены врачу");
+        setActiveSendIndex(null);
+        setSelectedDoctor((prev) => {
+          const newState = { ...prev };
+          delete newState[activeSendIndex];
+          return newState;
+        });
+      } else {
+        // Обработка ошибки от сервера
+        const errorData = await response.json().catch(() => ({ message: "Неизвестная ошибка сервера" }));
+        throw new Error(errorData.message || `Ошибка сервера: ${response.status}`);
+      }
+    } catch (error) {
+      // Альтернативный сценарий: Если сервер недоступен или произошла ошибка
+      console.error("Ошибка при отправке данных врачу:", error);
+      
+      // Шаг 11: Система выводит сообщение об ошибке
+      if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+        alert("Не удалось отправить данные. Сервер недоступен. Попробуйте позже.");
+      } else {
+        alert("Не удалось отправить данные. Попробуйте позже.");
+      }
+      
+      // Шаг 12: Пользователь может повторить попытку отправки позже
+      // (не закрываем форму, чтобы пользователь мог повторить попытку)
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   return (
     <div
@@ -79,7 +140,7 @@ useEffect(() => {
                         aria-expanded="false"
                         aria-controls={`collapse${index}`}
                       >
-                        Боль #{index + 1} —{" "}
+                        Боль #{index + 1} — {rec.pain_point_name || "Не указано"} —{" "}
                         {rec.record_date
                           ? new Date(rec.record_date).toLocaleString()
                           : "Без даты"}
@@ -105,20 +166,21 @@ useEffect(() => {
                                     [index]: e.target.value,
                                   }))
                                 }
+                                disabled={isSending}
                               >
                                 <option value="">Выберите врача</option>
-                                {doctors.map((doc) => (
+                                {doctorsList.map((doc) => (
                                   <option key={doc.id} value={doc.id}>
-                                    {doc.name}
+                                    {doc.specialty} - {doc.name}
                                   </option>
                                 ))}
                               </select>
                               <button
                                 className="btn btn-success btn-sm me-2"
-                                disabled={!selectedDoctor[index]}
+                                disabled={!selectedDoctor[index] || isSending}
                                 onClick={() => handleSendSingleRecord(rec, selectedDoctor[index])}
                               >
-                                Подтвердить отправку
+                                {isSending ? "Отправка..." : "Подтвердить отправку"}
                               </button>
                               <button
                                 className="btn btn-outline-secondary btn-sm"

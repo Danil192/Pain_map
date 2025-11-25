@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { ReactComponent as LegSvg } from "../assets/svg/Leg_R.svg";
+import { ReactComponent as LegSvg } from "../assets/svg/Leg_L.svg";
 import painPointsData from "../data/painPointsData.json";
 import PainModal from "./PainModal";
-import legImage from "../assets/svg/LegR.png";
 
 const legPoints = painPointsData["Нога_Правая"] || {};
 
@@ -15,69 +14,84 @@ const LegRView = () => {
     setShowModal(true);
   };
 
+  // Размеры контейнера для расчета координат
+  const containerWidth = 700;
+  const containerHeight = 700;
+  const scale = 0.7; // такой же scale как у SVG
+
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-white relative overflow-hidden">
+    <div className="w-screen h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: "transparent" }}>
       {/* Контейнер */}
       <div
         className="relative"
         style={{
-          width: "700px",
-          height: "700px",
+          width: `${containerWidth}px`,
+          height: `${containerHeight}px`,
           transform: "translate(-30px, -20px)",
         }}
       >
-        {/* SVG ноги СНИЗУ */}
-        <img
-          src={legImage}
-          alt="Нога"
-          className="absolute top-0 left-0 w-full h-full"
+        {/* SVG ноги - отражаем по горизонтали (scaleX) */}
+        <div
           style={{
-            transform: "scale(0.7)",
-            transformOrigin: "top left",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            transform: "scale(0.7) scaleX(-1)",
+            transformOrigin: "center center",
             zIndex: 10,
           }}
-        />
-
-        {/* Точки боли СВЕРХУ */}
-        {Object.entries(legPoints).map(([name, point], index) => (
-          <div
-            key={index}
-            title={name}
-            onClick={() => handlePointClick({ ...point, name })}
+        >
+          <LegSvg
             style={{
-              position: "absolute",
-              top: `${(point.y / 1024) * 100}%`,
-              left: `${(point.x / 1024) * 100}%`,
-              width: "20px",
-              height: "20px",
-              backgroundColor: "red",
-              borderRadius: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 30,
-              cursor: "pointer",
+              width: "100%",
+              height: "100%",
             }}
           />
-        ))}
+        </div>
+
+        {/* Точки боли СВЕРХУ */}
+        {Object.entries(legPoints).map(([name, point], index) => {
+          // Координаты из JSON в системе 0-1024
+          // Применяем scale (0.7) и горизонтальное отражение (scaleX)
+          const scaledWidth = containerWidth * scale;
+          const scaledHeight = containerHeight * scale;
+          const offsetX = (containerWidth - scaledWidth) / 2;
+          const offsetY = (containerHeight - scaledHeight) / 2;
+          
+          // Нормализуем координаты с учетом scale
+          const normalizedX = (point.x / 1024) * scaledWidth + offsetX;
+          const normalizedY = (point.y / 1024) * scaledHeight + offsetY;
+          
+          // Отражаем координаты по горизонтали относительно центра контейнера
+          const reflectedX = containerWidth - normalizedX;
+          
+          return (
+            <div
+              key={index}
+              title={name}
+              onClick={() => handlePointClick({ ...point, name })}
+              style={{
+                position: "absolute",
+                top: `${(normalizedY / containerHeight) * 100}%`,
+                left: `${(reflectedX / containerWidth) * 100}%`,
+                width: "20px",
+                height: "20px",
+                backgroundColor: "red",
+                borderRadius: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 30,
+                cursor: "pointer",
+              }}
+            />
+          );
+        })}
       </div>
 
       {/* Модалка */}
       {showModal && selectedPoint && (
-        <div
-          style={{
-            position: "fixed",
-            top: "5%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 9999,
-            backgroundColor: "white",
-            padding: "20px",
-            border: "2px solid black",
-            borderRadius: "12px",
-            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
-          }}
-        >
-          <PainModal point={selectedPoint} onClose={() => setShowModal(false)} />
-        </div>
+        <PainModal point={selectedPoint} onClose={() => setShowModal(false)} />
       )}
     </div>
   );

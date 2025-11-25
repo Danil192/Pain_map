@@ -4,9 +4,11 @@ import axios from "axios";
 
 const RegisterModal = ({ onClose }) => {
   const [formData, setFormData] = useState({
-    username: "",
+    фамилия: "",
+    имя: "",
+    отчество: "",
     email: "",
-    password: "",
+    пароль: "",
   });
   const [message, setMessage] = useState(null);
 
@@ -17,10 +19,16 @@ const RegisterModal = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://51.250.4.123:8001/AccessPoints/RegisterUser", formData);
+      // Используем локальный сервер
+      const response = await axios.post("http://localhost:5000/register", formData);
       setMessage("✅ Успешная регистрация!");
+      // Закрываем модалку через 1.5 секунды после успешной регистрации
+      setTimeout(() => {
+        onClose();
+      }, 1500);
     } catch (error) {
-      setMessage("❌ Ошибка: " + (error.response?.data?.detail?.[0]?.msg || error.message));
+      const errorMessage = error.response?.data?.error || error.response?.data?.detail?.[0]?.msg || error.message;
+      setMessage("❌ Ошибка: " + errorMessage);
     }
   };
 
@@ -44,14 +52,37 @@ const RegisterModal = ({ onClose }) => {
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
               <div className="mb-3">
-                <label className="form-label">Логин</label>
+                <label className="form-label">Фамилия</label>
                 <input
-                  name="username"
+                  name="фамилия"
                   className="form-control"
-                  placeholder="Введите логин"
-                  value={formData.username}
+                  placeholder="Введите фамилию"
+                  value={formData.фамилия}
                   onChange={handleChange}
                   required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Имя</label>
+                <input
+                  name="имя"
+                  className="form-control"
+                  placeholder="Введите имя"
+                  value={formData.имя}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Отчество</label>
+                <input
+                  name="отчество"
+                  className="form-control"
+                  placeholder="Введите отчество (необязательно)"
+                  value={formData.отчество}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -71,11 +102,11 @@ const RegisterModal = ({ onClose }) => {
               <div className="mb-3">
                 <label className="form-label">Пароль</label>
                 <input
-                  name="password"
+                  name="пароль"
                   type="password"
                   className="form-control"
                   placeholder="Введите пароль"
-                  value={formData.password}
+                  value={formData.пароль}
                   onChange={handleChange}
                   required
                 />

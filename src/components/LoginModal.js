@@ -1,29 +1,43 @@
 // src/components/LoginModal.js
 import React, { useState } from "react";
-import axios from "axios";
+
+// Простой пользователь для демо (без БД)
+const DEMO_USER = {
+  email: "user@example.com",
+  password: "12345",
+  username: "Пользователь",
+  id: 1
+};
 
 const LoginModal = ({ onClose, onLoginSuccess }) => {
-  const [formData, setFormData] = useState({ login: "", password: "" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [message, setMessage] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post("http://51.250.4.123:8001/AccessPoints/LoginUser", formData);
+    
+    // Простая проверка без БД
+    if (formData.email === DEMO_USER.email && formData.password === DEMO_USER.password) {
       setMessage("✅ Успешный вход!");
-
+      
       if (onLoginSuccess) {
         onLoginSuccess({
-          username: formData.login,
-          email: null // если сервер не возвращает email — пусть будет null
+          username: DEMO_USER.username,
+          email: DEMO_USER.email,
+          id: DEMO_USER.id
         });
       }
-    } catch (error) {
-      setMessage("❌ Ошибка: " + (error.response?.data?.detail?.[0]?.msg || error.message));
+      
+      // Закрываем модалку через 1 секунду после успешного входа
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } else {
+      setMessage("❌ Неверный email или пароль. Используйте: user@example.com / 12345");
     }
   };
 
@@ -47,12 +61,13 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
           <form onSubmit={handleSubmit}>
             <div className="modal-body">
               <div className="mb-3">
-                <label className="form-label">Логин</label>
+                <label className="form-label">Email</label>
                 <input
-                  name="login"
+                  name="email"
+                  type="email"
                   className="form-control"
-                  placeholder="Введите логин"
-                  value={formData.login}
+                  placeholder="user@example.com"
+                  value={formData.email}
                   onChange={handleChange}
                   required
                 />
@@ -64,11 +79,15 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
                   name="password"
                   type="password"
                   className="form-control"
-                  placeholder="Введите пароль"
+                  placeholder="12345"
                   value={formData.password}
                   onChange={handleChange}
                   required
                 />
+              </div>
+              
+              <div className="alert alert-info">
+                <small>Демо-доступ: user@example.com / 12345</small>
               </div>
 
               {message && <div className="alert alert-info mt-2">{message}</div>}

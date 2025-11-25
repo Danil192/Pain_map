@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { savePainPoint, saveUserPainRecord } from "../api";
+import { useUser } from "../context/UserContext";
 
-const PainModal = ({ point, onClose, user }) => {
+const PainModal = ({ point, onClose }) => {
+  const { user } = useUser();
   const painTypeToId = {
     "Острая": 1,
     "Тупая": 2,
@@ -39,35 +40,39 @@ const PainModal = ({ point, onClose, user }) => {
   };
 
   const handleSave = async () => {
-    try {
-      const savedPoint = await savePainPoint({
-        platform_id: 1,
-        X_coord: point.x,
-        Y_coord: point.y,
-        body_part_id: point.bodyPartId || 1,
-        pain_point_name: point.name,
-        pain_point_id: point.id || 1,
-      });
+    // Проверка авторизации
+    if (!user) {
+      alert("Войдите, чтобы сохранить точку боли");
+      onClose();
+      return;
+    }
 
-      const payload = {
-        user_id: user?.id || 1,
-        body_position_id: triggers.position ? 1 : 2,
-        breathing_relation_id: triggers.breath ? 1 : 2,
-        pain_point_id: savedPoint.pain_point_id || point.id || 1,
-        pain_intensity_id: parseInt(intensity) || 1,
-        pain_type_id: painTypeToId[character] || 1,
-        time_of_day_id: timeOfDayToId[timeOfDay] || 1,
-        stress_relation_id: triggers.stress ? 1 : 2,
-        physical_activity_relation_id: triggers.physical ? 1 : 2,
+    try {
+      // Упрощенное сохранение без БД - просто сохраняем в localStorage
+      const painRecord = {
+        id: Date.now(),
+        pain_point_name: point.name || "Не указано",
+        pain_intensity: intensity,
+        pain_type: character,
+        time_of_day: timeOfDay,
+        body_position: triggers.position ? "Да" : "Нет",
+        breathing_relation: triggers.breath ? "Да" : "Нет",
+        physical_activity_relation: triggers.physical ? "Да" : "Нет",
+        stress_relation: triggers.stress ? "Да" : "Нет",
         record_date: new Date().toISOString(),
+        user_id: user.id
       };
 
-      await saveUserPainRecord(payload);
+      // Получаем существующие записи из localStorage
+      const existingRecords = JSON.parse(localStorage.getItem('painRecords') || '[]');
+      existingRecords.push(painRecord);
+      localStorage.setItem('painRecords', JSON.stringify(existingRecords));
+
       alert("Боль успешно сохранена!");
       onClose();
     } catch (err) {
       console.error("Ошибка при сохранении боли:", err);
-      alert("Ошибка при отправке данных");
+      alert("Ошибка при сохранении данных");
     }
   };
 
